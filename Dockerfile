@@ -25,7 +25,8 @@ RUN composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-gd
 RUN npm install && npm run build
 
 # Storage Link & Permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chmod +x /var/www/html/scripts/00-migrate.sh \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Expose HTTP port
 EXPOSE 80
