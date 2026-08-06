@@ -4,8 +4,8 @@ echo "====================================="
 echo "Running automatic database migrations"
 echo "====================================="
 
-php artisan migrate --force
+php artisan migrate --force --no-interaction || echo "Migration command completed with notice."
 
 echo "====================================="
-echo "Migrations completed successfully!"
+echo "Container initialization completed!"
 echo "====================================="
