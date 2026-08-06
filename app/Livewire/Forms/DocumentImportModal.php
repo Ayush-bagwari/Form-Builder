@@ -137,6 +137,11 @@ class DocumentImportModal extends Component
             'version' => 1,
         ]);
 
+        if (auth()->user()) {
+            $filename = is_object($this->documentFile) && method_exists($this->documentFile, 'getClientOriginalName') ? $this->documentFile->getClientOriginalName() : 'Document';
+            auth()->user()->notify(new \App\Notifications\DocumentImportedNotification($form, $filename));
+        }
+
         session()->flash('success', 'Form "' . $this->title . '" imported successfully!');
         $this->closeModal();
 

@@ -49,6 +49,11 @@ class GenerateAiFormJob implements ShouldQueue
                     'ai_status' => 'completed',
                 ]);
 
+                // Send In-App Notification to Form Owner
+                if ($this->form->user) {
+                    $this->form->user->notify(new \App\Notifications\FormGeneratedNotification($this->form, 'generated'));
+                }
+
                 // Record token usage & metrics log
                 AiGenerationLog::create([
                     'form_id' => $this->form->id,

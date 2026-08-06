@@ -22,6 +22,7 @@ A dynamic web application built with Laravel 11, Livewire 3, Alpine.js, and Tail
 - **AI Provider**: Google Gemini API (`gemini-1.5-flash`)
 - **Document Parsers**: PhpOffice (`phpword`, `phpspreadsheet`)
 - **Database**: MySQL (SQLite for testing)
+- **Queue & Cache**: Redis (predis) with Supervisor worker support
 - **Testing**: PHPUnit (38 automated tests)
 
 ---
@@ -42,7 +43,7 @@ A dynamic web application built with Laravel 11, Livewire 3, Alpine.js, and Tail
    php artisan key:generate
    ```
 
-3. Update `.env` with your database credentials and Gemini API key:
+3. Update `.env` with your database credentials, Gemini API key, and queue settings:
    ```env
    DB_CONNECTION=mysql
    DB_HOST=127.0.0.1
@@ -53,7 +54,14 @@ A dynamic web application built with Laravel 11, Livewire 3, Alpine.js, and Tail
 
    GEMINI_API_KEY=your_gemini_api_key_here
    GEMINI_MODEL=gemini-1.5-flash
+
+   # Queue setup: Use 'sync' for local dev or 'redis' for production queues
    QUEUE_CONNECTION=sync
+
+   # Optional Redis config (when QUEUE_CONNECTION=redis)
+   REDIS_CLIENT=predis
+   REDIS_HOST=127.0.0.1
+   REDIS_PORT=6379
    ```
 
 4. Run database migrations:

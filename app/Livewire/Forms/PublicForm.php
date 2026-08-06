@@ -68,12 +68,17 @@ class PublicForm extends Component
         }
 
         // Store Submission in Database
-        FormSubmission::create([
+        $submission = FormSubmission::create([
             'form_id' => $this->form->id,
             'data' => $answers,
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
         ]);
+
+        // Send In-App Notification to Form Owner
+        if ($this->form->user) {
+            $this->form->user->notify(new \App\Notifications\FormSubmittedNotification($this->form, $answers));
+        }
 
         $this->submitted = true;
     }
