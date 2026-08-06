@@ -19,6 +19,8 @@ class Form extends Model
         'settings',
         'status',
         'version',
+        'ai_status',
+        'ai_prompt',
     ];
 
     protected $casts = [
@@ -64,6 +66,11 @@ class Form extends Model
     public function submissions()
     {
         return $this->hasMany(FormSubmission::class);
+    }
+
+    public function aiLogs()
+    {
+        return $this->hasMany(AiGenerationLog::class);
     }
 
     public function getPublicUrlAttribute(): string

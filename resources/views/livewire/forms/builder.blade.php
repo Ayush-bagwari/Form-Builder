@@ -49,6 +49,19 @@
                     {{ ucfirst($status) }}
                 </span>
 
+                @if($form && $form->exists)
+                    <button 
+                        type="button"
+                        wire:click="$dispatch('openAiRefineModal', { formId: {{ $form->id }} })"
+                        class="px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium text-xs rounded-xl shadow-sm transition flex items-center gap-1.5"
+                    >
+                        <svg class="w-4 h-4 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        <span>AI Assistant</span>
+                    </button>
+                @endif
+
                 <button 
                     type="button"
                     onclick="triggerFormBuilderSave()"
@@ -390,6 +403,9 @@
         @endif
 
     </div>
+
+    {{-- AI Generator Modal Component --}}
+    @livewire('forms.ai-form-generator-modal')
 
 </div>
 

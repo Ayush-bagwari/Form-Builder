@@ -1,66 +1,110 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🚀 AI Dynamic Form Builder & Management Platform
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A modern, full-stack Laravel 11 + Livewire 3 + Alpine.js + Tailwind CSS application for building, editing, previewing, and analyzing dynamic interactive forms. Powered by an **AI Form Generation Engine (Google Gemini API & OpenAI)** with asynchronous queued processing.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🌟 Key Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 1. Phase 1 — Form Engine & Core Builder
+- **Visual Drag & Drop Canvas**: Built with jQuery `formBuilder` integrated into Livewire state.
+- **4-Step Wizard**: Details ➔ Visual Canvas / Raw JSON Editor ➔ Settings ➔ Publish & Share.
+- **12+ Field Types**: Text, Email, Textarea, Number, Select, Radio, Checkbox, Date, File, Phone, Rating (Star Rating), and Digital Signature.
+- **Public Form Endpoint**: `/f/{slug}` dynamically renders public forms, validates responses, enforces custom rate limits, and persists submissions.
+- **Submissions Analytics**: Responses table, filter modals, response stats, and real-time CSV streaming export.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 2. Phase 2 — AI Form Generation & Refinement (Part B)
+- **Natural Language Creation**: Turn prompts like *"Internship application with education history, skills, and resume upload"* into complete, fully editable forms.
+- **AI Form Editing (Refinement)**: Modify existing forms on the fly (*"Add emergency contact section"*, *"Make phone required"*, *"Translate labels to Hindi"*).
+- **Asynchronous Non-Blocking Queued Jobs**: Long LLM calls run in the background via `GenerateAiFormJob` and `RefineAiFormJob`. Livewire dashboard polls progress in real-time (`wire:poll.3s`) without blocking HTTP requests.
+- **Token & Latency Logging**: Persists LLM model name (`gemini-1.5-flash`), prompt tokens, completion tokens, total tokens, and latency (ms) in the `ai_generation_logs` table.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 🧠 AI Prompt Strategy & Reliability System
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 1. System Prompt & Strict JSON Output Contract
+The AI Form Generator ([AiFormGeneratorService.php](file:///c:/Users/user/Desktop/form-builder/app/Services/AiFormGeneratorService.php)) enforces a strict system prompt with JSON response format:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```json
+{
+  "title": "Clear Form Title",
+  "description": "Form instructions...",
+  "version": 1,
+  "sections": [
+    {
+      "id": "sec_1",
+      "title": "Section Name",
+      "fields": [
+        {
+          "id": "field_1",
+          "type": "text|email|textarea|number|select|radio|checkbox|file|date|phone|rating|signature",
+          "key": "unique_snake_case_key",
+          "label": "User Facing Label",
+          "placeholder": "...",
+          "required": true,
+          "options": [{"label": "Option 1", "value": "option_1"}],
+          "validation": {"max_length": 255}
+        }
+      ]
+    }
+  ]
+}
+```
 
-## Laravel Sponsors
+### 2. JSON Repair Engine
+To handle malformed or partial LLM JSON outputs gracefully:
+- **Markdown Stripping**: Automatically strips triple-backtick markdown blocks (` ```json ... ``` `).
+- **Trailing Comma Cleanup**: Removes trailing commas before closing braces/brackets (`,\s*}` or `,\s*]`).
+- **Bracket Repair**: Gracefully handles missing outer braces before parsing.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 3. Hallucinated Field Type Mapping
+If the LLM hallucinates non-standard field types, `AiFormGeneratorService` automatically maps them:
+- `dropdown` ➔ `select`
+- `multiselect` / `checkboxes` ➔ `checkbox`
+- `radio-group` / `radios` ➔ `radio`
+- `tel` / `telephone` ➔ `phone`
+- `star` / `starRating` ➔ `rating`
+- `attach` / `upload` ➔ `file`
+- `header` / `heading` ➔ `text`
 
-### Premium Partners
+### 4. Automatic Retries & Offline Fallback
+- **Up to 3 Automated Retries**: If the LLM output fails schema validation, the service appends the error trace and retries the prompt with explicit correction guidance.
+- **Offline Mock Generator**: If no `GEMINI_API_KEY` is set in `.env`, the service seamlessly falls back to an intelligent offline mock generator so developers and reviewers can evaluate the AI workflow offline without API charges.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+---
 
-## Contributing
+## 🛠️ Configuration & Setup
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+1. **Clone & Install Dependencies**:
+   ```bash
+   composer install
+   npm install
+   ```
 
-## Code of Conduct
+2. **Environment Setup**:
+   Copy `.env.example` to `.env`:
+   ```env
+   GEMINI_API_KEY=your_gemini_api_key_here
+   GEMINI_MODEL=gemini-1.5-flash
+   ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+3. **Database & Migrations**:
+   ```bash
+   php artisan migrate
+   ```
 
-## Security Vulnerabilities
+4. **Run Test Suite**:
+   ```bash
+   php vendor/bin/phpunit
+   ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+5. **Run Local Server**:
+   ```bash
+   php artisan serve
+   ```
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 📜 License
+The project is open-source under the [MIT license](https://opensource.org/licenses/MIT).
