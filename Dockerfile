@@ -30,10 +30,10 @@ RUN npm install && npm run build
 RUN chmod +x /var/www/html/scripts/00-migrate.sh \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Remove default Nginx configs and install custom Laravel site config
-RUN rm -rf /etc/nginx/sites-enabled/* /etc/nginx/sites-available/* /etc/nginx/conf.d/*
+# Copy custom Nginx & Supervisor configurations
 COPY conf/nginx/site.conf /etc/nginx/sites-available/default
 RUN ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+COPY conf/supervisor/laravel-worker.conf /etc/supervisor/conf.d/laravel-worker.conf
 
 # Expose HTTP port
 EXPOSE 80
