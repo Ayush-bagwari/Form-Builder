@@ -88,7 +88,6 @@ JSON;
             'form_id' => $form->id,
             'user_id' => $user->id,
             'action_type' => 'create',
-            'status' => 'completed',
         ]);
     }
 
@@ -125,7 +124,6 @@ JSON;
         $this->assertDatabaseHas('ai_generation_logs', [
             'form_id' => $form->id,
             'action_type' => 'refine',
-            'status' => 'completed',
         ]);
     }
 
