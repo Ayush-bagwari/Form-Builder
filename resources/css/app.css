@@ -1,3 +1,5 @@
+@import "jquery-ui-dist/jquery-ui.min.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
