@@ -15,8 +15,8 @@ ENV APP_DEBUG=false
 ENV LOG_CHANNEL=stderr
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# Install PHP extensions required by Laravel & PhpOffice
-RUN apk add --no-cache libpng-dev libjpeg-turbo-dev freetype-dev zip libzip-dev \
+# Install Node.js, NPM, and PHP extensions required by Laravel & PhpOffice
+RUN apk add --no-cache nodejs npm libpng-dev libjpeg-turbo-dev freetype-dev zip libzip-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo_mysql bcmath zip
 
