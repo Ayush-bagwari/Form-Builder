@@ -78,3 +78,10 @@ A dynamic web application built with Laravel 11, Livewire 3, Alpine.js, and Tail
    ```bash
    php artisan serve
    ```
+
+
+
+we can limit tokens per user
+or we can ask for  payment for using ai features
+or we can ask them to enter their own api keys
+using s3 for uploading files
