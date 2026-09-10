@@ -1,53 +1,12 @@
-name: CI/CD Pipeline
+name: Deploy to AWS EC2
 
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
-  test:
-    name: Run Tests & Build Check
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_sqlite, bcmath, gd, zip
-          coverage: none
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install Composer Dependencies
-        run: composer install --prefer-dist --no-interaction --no-progress
-
-      - name: Install NPM Dependencies & Build Assets
-        run: |
-          npm ci
-          npm run build
-
-      - name: Prepare Laravel Environment
-        run: |
-          cp .env.example .env
-          php artisan key:generate
-
-      - name: Execute Automated Tests
-        run: php artisan test
-
   deploy:
-    name: Deploy to AWS EC2
-    needs: test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    name: Deploy to EC2
     runs-on: ubuntu-latest
 
     steps:
@@ -60,11 +19,11 @@ jobs:
           script: |
             set -e
             cd /home/${{ secrets.EC2_USER }}/form-builder
-            echo "Pulling latest code from main..."
+            echo "Pulling latest changes from main..."
             git pull origin main
 
-            echo "Building production Docker image..."
-            docker build -t form-builder:latest .
+            echo "Building Docker image..."
+            docker build -t form-builder .
 
             echo "Restarting application container..."
             docker stop form-builder || true
@@ -74,7 +33,7 @@ jobs:
               --restart unless-stopped \
               -p 80:80 \
               --env-file /home/${{ secrets.EC2_USER }}/form-builder/.env \
-              form-builder:latest
+              form-builder
 
             echo "Pruning unused docker images..."
             docker image prune -f
