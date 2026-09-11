@@ -18,7 +18,14 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-            cd /home/${{ secrets.EC2_USER }}/form-builder
+            if [ -d "/home/${{ secrets.EC2_USER }}/Form-Builder" ]; then
+              cd "/home/${{ secrets.EC2_USER }}/Form-Builder"
+            elif [ -d "/home/${{ secrets.EC2_USER }}/form-builder" ]; then
+              cd "/home/${{ secrets.EC2_USER }}/form-builder"
+            else
+              echo "Project directory not found!" && exit 1
+            fi
+
             echo "Pulling latest changes from main..."
             git pull origin main
 
@@ -26,13 +33,13 @@ jobs:
             docker build -t form-builder .
 
             echo "Restarting application container..."
-            docker stop form-builder || true
-            docker rm form-builder || true
+            docker stop Form-Builder form-builder 2>/dev/null || true
+            docker rm Form-Builder form-builder 2>/dev/null || true
             docker run -d \
-              --name form-builder \
+              --name Form-Builder \
               --restart unless-stopped \
               -p 80:80 \
-              --env-file /home/${{ secrets.EC2_USER }}/form-builder/.env \
+              --env-file .env \
               form-builder
 
             echo "Pruning unused docker images..."
