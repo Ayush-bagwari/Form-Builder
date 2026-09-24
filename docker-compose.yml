@@ -1,0 +1,109 @@
+# ==============================================================================
+# Docker Compose: Form Builder Multi-Container Environment
+# Services:
+#   1. app   - Laravel 11 + Livewire + Nginx + PHP-FPM 8.2 + Supervisor Worker
+#   2. mysql - MySQL 8.0 Relational Database Engine
+#   3. redis - Redis In-Memory Store for Queues & Caching
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # Application Container (Web Server + PHP + Background Worker)
+  # ----------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: form_builder_app
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    environment:
+      APP_NAME: "${APP_NAME:-Form Builder}"
+      APP_ENV: "${APP_ENV:-local}"
+      APP_KEY: "${APP_KEY:-}"
+      APP_DEBUG: "${APP_DEBUG:-true}"
+      APP_URL: "${APP_URL:-http://localhost:8000}"
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: "${DB_DATABASE:-form_builder}"
+      DB_USERNAME: "${DB_USERNAME:-form_user}"
+      DB_PASSWORD: "${DB_PASSWORD:-secret}"
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      SESSION_DRIVER: database
+      CACHE_STORE: redis
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      # Bind-mount current directory for live code hot-reloading
+      - ./:/var/www/html
+      # Preserve container-built Linux vendor, node_modules, and compiled Vite assets
+      - /var/www/html/vendor
+      - /var/www/html/node_modules
+      - /var/www/html/public/build
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - form_builder_net
+
+  # ----------------------------------------------------------------------------
+  # MySQL Database Container
+  # ----------------------------------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: form_builder_mysql
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD:-rootsecret}"
+      MYSQL_DATABASE: "${DB_DATABASE:-form_builder}"
+      MYSQL_USER: "${DB_USERNAME:-form_user}"
+      MYSQL_PASSWORD: "${DB_PASSWORD:-secret}"
+    ports:
+      - "3306:3306"
+    volumes:
+      # Named volume to persist database records on host
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-rootsecret}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - form_builder_net
+
+  # ----------------------------------------------------------------------------
+  # Redis Container (Queues, Jobs, Cache)
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:alpine
+    container_name: form_builder_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      # Named volume to persist Redis queue data
+      - redis_data:/data
+    networks:
+      - form_builder_net
+
+# ==============================================================================
+# Networks & Persistent Volumes
+# ==============================================================================
+networks:
+  form_builder_net:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local
+  redis_data:
+    driver: local

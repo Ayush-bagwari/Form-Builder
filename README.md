@@ -29,10 +29,40 @@ A dynamic web application built with Laravel 11, Livewire 3, Alpine.js, and Tail
 
 ## Setup & Installation
 
+### Option A: Using Docker (Recommended — 1 Command Setup)
+
+The entire application (Nginx, PHP 8.2, MySQL 8.0, Redis, and Supervisor queue worker) can be started with Docker Desktop without installing PHP, Composer, or MySQL on your host machine:
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/Ayush-bagwari/Form-Builder.git
+   cd Form-Builder
+   ```
+
+2. **Copy the Docker environment template**:
+   ```bash
+   cp .env.docker.example .env
+   ```
+
+3. **Start the containers**:
+   ```bash
+   docker compose up -d --build
+   ```
+
+4. **Access the application**:
+   Open **[http://localhost:8000](http://localhost:8000)** in your browser!
+   *(Database migrations, APP_KEY, storage symlinks, and queue workers are initialized automatically).*
+
+> 📘 For a complete list of commands (stopping, restarting, running artisan commands inside Docker), see **[DOCKER_COMMANDS_GUIDE.md](file:///c:/Users/Ayush%20Bagwari/Desktop/Form-Builder/DOCKER_COMMANDS_GUIDE.md)**.
+
+---
+
+### Option B: Manual Local Setup (Without Docker)
+
 1. Clone the repository and install dependencies:
    ```bash
    git clone https://github.com/Ayush-bagwari/Form-Builder.git
-   cd form-builder
+   cd Form-Builder
    composer install --ignore-platform-req=ext-gd
    npm install && npm run build
    ```

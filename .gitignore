@@ -17,3 +17,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+/.agents
+CLOUD_ARCHITECTURE_GUIDE.md
+DOCKER_COMMANDS_GUIDE.md
+AWS_PRODUCTION_DEPLOYMENT_GUIDE.md

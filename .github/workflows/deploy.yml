@@ -26,23 +26,28 @@ jobs:
               echo "Project directory not found!" && exit 1
             fi
 
+            # 2. Ensure persistent storage folder exists on host
+            mkdir -p /home/${{ secrets.EC2_USER }}/app_storage
+
             echo "Pulling latest changes from main..."
             git pull origin main
 
-            echo "Building Docker image..."
+            echo "Building optimized Docker image..."
             docker build -t form-builder .
 
             echo "Restarting application container..."
-            docker stop Form-Builder form-builder 2>/dev/null || true
-            docker rm Form-Builder form-builder 2>/dev/null || true
+            docker stop Form-Builder 2>/dev/null || true
+            docker rm Form-Builder 2>/dev/null || true
+
             docker run -d \
               --name Form-Builder \
               --restart unless-stopped \
               -p 80:80 \
               --env-file .env \
+              -v /home/${{ secrets.EC2_USER }}/app_storage:/var/www/html/storage/app/public \
               form-builder
 
             echo "Pruning unused docker images..."
             docker image prune -f
 
-            echo "Deployment completed successfully!"
+            echo "🚀 Deployment completed successfully!"
